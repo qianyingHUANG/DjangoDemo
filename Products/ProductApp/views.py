@@ -10,6 +10,7 @@ from ProductApp.serializer import ProductSerializer, PriceSerializer
 class ProductView(GenericViewSet):
     authentication_classes = []
     permission_classes = []
+    serializer_class = ProductSerializer
 
     def getAllProducts(self, request, *args, **kwargs):
         products = Product.objects.all()
@@ -43,6 +44,7 @@ class ProductView(GenericViewSet):
 class PriceView(GenericViewSet):
     authentication_classes = []
     permission_classes = []
+    serializer_class = PriceSerializer
 
     def addPrice(self, request, *args, **kwargs):
         price_data = JSONParser().parse(request)
@@ -50,10 +52,10 @@ class PriceView(GenericViewSet):
         try:
             if price_data_serializer.is_valid(raise_exception=True):
                 price_data_serializer.save()
-                return JsonResponse('Set price Successfully!!')
+                return JsonResponse('Set price Successfully!!', safe=False)
         except Exception as e:
             print(e)
-            return JsonResponse(e, status=500)
+            return JsonResponse(e, safe=False, status=500)
 
     def calculatePrice(self, request, *args, **kwargs):
         data = JSONParser().parse(request)
@@ -61,7 +63,7 @@ class PriceView(GenericViewSet):
         product_price_list = product_price_list.filter(startDate__gte=data['startDate'], endDate__lte=data['endDate'])
         sumPrice = 0
         for p in product_price_list:
-            print(p.id,p.price)
+            print(p.id, p.price)
             sumPrice += p.price
-        avgPrice = sumPrice/len(product_price_list)
-        return JsonResponse({'price': avgPrice})
+        avgPrice = sumPrice / len(product_price_list)
+        return JsonResponse({'price': avgPrice}, safe=False)
